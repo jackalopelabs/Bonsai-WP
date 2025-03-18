@@ -13,7 +13,7 @@ export default defineConfig({
         chunkFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name.endsWith('.css')) {
-            return 'css/[name].css';
+            return 'css/[name][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         },
@@ -21,14 +21,16 @@ export default defineConfig({
     },
     sourcemap: true,
     manifest: true,
+    target: 'esnext',
+    modulePreload: true,
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
     },
-  },
-  server: {
-    port: 3000,
-    strictPort: true,
   },
 }); 

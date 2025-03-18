@@ -1,41 +1,43 @@
 <?php
 /**
- * Planet container template
- *
- * @var array $atts Shortcode attributes
+ * Template for the planet shortcode
  */
 ?>
-<div class="bonsai-planet-container" style="width: <?php echo esc_attr($atts['width']); ?>; height: <?php echo esc_attr($atts['height']); ?>; position: relative;">
-  <canvas id="<?php echo esc_attr($atts['id']); ?>" class="bonsai-planet-canvas" style="width: 100%; height: 100%;"></canvas>
-  
-  <div class="bonsai-planet-controls" style="position: absolute; top: 20px; left: 20px; z-index: 10; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <h3>Planet Controls</h3>
-    <button class="bonsai-planet-btn" data-planet-type="beach">Beach Planet</button>
-    <button class="bonsai-planet-btn" data-planet-type="forest">Forest Planet</button>
-    <button class="bonsai-planet-btn" data-planet-type="snow">Snow Forest Planet</button>
-    <button class="bonsai-planet-btn" data-planet-type="random">Random Planet</button>
-  </div>
-  
-  <div class="bonsai-planet-instructions" style="position: absolute; bottom: 20px; left: 20px; z-index: 10; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 300px;">
-    <h3>Ball Controls</h3>
-    <p>WASD or Arrow Keys: Roll the ball (relative to camera view)</p>
-    <p>Space: Jump (ball jumps away from planet)</p>
-    <p>Mouse Wheel: Zoom in/out (closer = 10% size & micro-movement, farther = 200% size & faster)</p>
-    <p>Click and Drag: Change camera angle around the ball</p>
-    <p>R: Toggle planet auto-rotation</p>
-    <p>1, 2, 3: Switch planet type</p>
-    <p>Ctrl+D: Toggle debug ray visualization</p>
-    <p><strong>New Features:</strong> Microscopic zoom level for extreme close-ups!</p>
-  </div>
+<div id="planet-container-<?php echo esc_attr($id); ?>" class="planet-container" style="position: relative; width: <?php echo esc_attr($width); ?>; height: <?php echo esc_attr($height); ?>;">
+    <canvas id="planet-canvas-<?php echo esc_attr($id); ?>" style="width: 100%; height: 100%;"></canvas>
+    <div class="planet-controls" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; border-radius: 5px; font-size: 14px;">
+        <h3 style="margin: 0 0 10px 0;">Controls</h3>
+        <p style="margin: 5px 0;">Left Mouse: Rotate</p>
+        <p style="margin: 5px 0;">Right Mouse: Pan</p>
+        <p style="margin: 5px 0;">Scroll: Zoom</p>
+        <p style="margin: 5px 0;">Space: Toggle Rotation</p>
+    </div>
+    <div class="planet-instructions" style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; border-radius: 5px; font-size: 14px;">
+        <p style="margin: 5px 0;">Press 1-3 to switch presets</p>
+        <p style="margin: 5px 0;">Click Random for new planet</p>
+    </div>
 </div>
 
-<script type="text/javascript">
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the planet once the DOM is fully loaded
-    if (typeof initBonsaiPlanet === 'function') {
-      initBonsaiPlanet('<?php echo esc_js($atts['id']); ?>');
-    } else {
-      console.error('Bonsai Planet script not loaded properly');
-    }
-  });
+<script type="module">
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('planet-container-<?php echo esc_attr($id); ?>');
+        const canvas = document.getElementById('planet-canvas-<?php echo esc_attr($id); ?>');
+        
+        if (!container || !canvas) {
+            console.error('Planet container or canvas not found');
+            return;
+        }
+
+        // Initialize the planet
+        try {
+            const { initPlanet } = await import('<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/js/main-bundle.js'); ?>');
+            initPlanet(canvas, {
+                width: container.clientWidth,
+                height: container.clientHeight,
+                id: '<?php echo esc_attr($id); ?>'
+            });
+        } catch (error) {
+            console.error('Failed to initialize planet:', error);
+        }
+    });
 </script> 

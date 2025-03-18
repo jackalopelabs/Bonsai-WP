@@ -118,31 +118,38 @@ class BonsaiPlanets {
      * Register and enqueue scripts and styles
      */
     public function registerAssets() {
-        // Register the ThreeJS bundle
+        // Register ThreeJS from CDN
+        wp_register_script(
+            'threejs',
+            'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.162.0/three.min.js',
+            [],
+            '0.162.0',
+            true
+        );
+
+        // Register main bundle with type="module"
         wp_register_script(
             'bonsai-planets-bundle',
-            BONSAI_PLANETS_ASSETS . 'js/main-bundle.js',
-            ['three'],
-            BONSAI_PLANETS_VERSION,
+            plugin_dir_url(__FILE__) . 'assets/js/main-bundle.js',
+            ['threejs'],
+            '1.0.0',
             true
         );
+        wp_script_add_data('bonsai-planets-bundle', 'type', 'module');
 
-        // Register ThreeJS as a dependency
-        wp_register_script(
-            'three',
-            'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.161.0/three.min.js',
-            [],
-            '0.161.0',
-            true
-        );
-
-        // Register the plugin styles
+        // Register styles with correct MIME type
         wp_register_style(
-            'bonsai-planets-styles',
-            BONSAI_PLANETS_ASSETS . 'css/main.css',
+            'bonsai-planets-style',
+            plugin_dir_url(__FILE__) . 'assets/css/main.css',
             [],
-            BONSAI_PLANETS_VERSION
+            '1.0.0'
         );
+        add_filter('style_loader_tag', function($tag, $handle) {
+            if ($handle === 'bonsai-planets-style') {
+                return str_replace("rel='stylesheet'", "rel='stylesheet' type='text/css'", $tag);
+            }
+            return $tag;
+        }, 10, 2);
     }
 
     /**
@@ -157,9 +164,9 @@ class BonsaiPlanets {
         ], $atts);
 
         // Enqueue required assets
-        wp_enqueue_script('three');
+        wp_enqueue_script('threejs');
         wp_enqueue_script('bonsai-planets-bundle');
-        wp_enqueue_style('bonsai-planets-styles');
+        wp_enqueue_style('bonsai-planets-style');
 
         // Get the HTML template
         ob_start();
