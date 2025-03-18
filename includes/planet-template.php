@@ -1,7 +1,16 @@
 <?php
 /**
  * Template for the planet shortcode
+ * 
+ * @var string $id The unique identifier for the planet container
+ * @var string $width The width of the planet container
+ * @var string $height The height of the planet container
  */
+
+// Ensure variables are defined
+$id = $id ?? 'bonsai-planet-' . uniqid();
+$width = $width ?? '100%';
+$height = $height ?? '500px';
 ?>
 <div id="planet-container-<?php echo esc_attr($id); ?>" class="planet-container" style="position: relative; width: <?php echo esc_attr($width); ?>; height: <?php echo esc_attr($height); ?>;">
     <canvas id="planet-canvas-<?php echo esc_attr($id); ?>" style="width: 100%; height: 100%;"></canvas>

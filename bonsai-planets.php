@@ -63,54 +63,36 @@ class BonsaiPlanets {
         add_shortcode('bonsai_planet', [$this, 'planetShortcode']);
 
         // Register Blade directive
-        $this->registerSageDirective();
+        $this->registerBladeDirective();
     }
 
     /**
      * Register Blade directive
      */
-    private function registerSageDirective() {
-        // Method 1: Add via sage/blade/directives filter (requires Sage 10+)
-        add_filter('sage/blade/directives', function ($directives) {
-            $directives['bonsaiPlanet'] = function($expression) {
-                return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
-            };
-            return $directives;
-        });
+    public function registerBladeDirective() {
+        if (!class_exists('\Roots\Sage\Blade\Blade')) {
+            return;
+        }
 
-        // Method 2: Add via app service provider (requires Sage 10+)
-        add_action('after_setup_theme', function() {
-            if (function_exists('Roots\app')) {
-                Roots\app()->singleton('sage.directives', function () {
-                    return [
-                        'bonsaiPlanet' => function ($expression) {
-                            return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
-                        },
-                    ];
-                });
-            }
-        });
-
-        // Method 3: Direct hook into blade compiler 
-        add_action('after_setup_theme', function() {
-            if (function_exists('Roots\app') && method_exists(Roots\app(), 'make')) {
-                try {
-                    $blade = Roots\app()->make('blade.compiler');
-                    $blade->directive('bonsaiPlanet', function ($expression) {
-                        return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
-                    });
-                    error_log('Bonsai Planets: Directive registered with blade compiler directly');
-                } catch (\Exception $e) {
-                    error_log('Bonsai Planets: Error registering blade directive: ' . $e->getMessage());
+        $blade = \Roots\Sage\Blade\Blade::getInstance();
+        $blade->directive('bonsaiPlanet', function ($expression) {
+            // Parse the attributes string
+            $attributes = [];
+            if (preg_match_all('/(\w+)\s*=\s*["\']([^"\']+)["\']/', $expression, $matches)) {
+                for ($i = 0; $i < count($matches[1]); $i++) {
+                    $attributes[$matches[1][$i]] = $matches[2][$i];
                 }
             }
-        }, 20);
 
-        // Method 4: Add via WordPress action for debugging
-        add_action('wp_footer', function() {
-            // Check if these functions exist to help with debugging
-            error_log('Function Roots\\app exists: ' . (function_exists('Roots\\app') ? 'Yes' : 'No'));
-            error_log('Function Roots\\view exists: ' . (function_exists('Roots\\view') ? 'Yes' : 'No'));
+            // Set default values
+            $id = $attributes['id'] ?? 'bonsai-planet-' . uniqid();
+            $width = $attributes['width'] ?? '100%';
+            $height = $attributes['height'] ?? '500px';
+
+            // Start output buffering
+            ob_start();
+            include plugin_dir_path(__FILE__) . 'includes/planet-template.php';
+            return ob_get_clean();
         });
     }
 
