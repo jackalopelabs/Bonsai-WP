@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import '../styles/app.css';
 import { biomePresets, planetPresets } from './worlds/presets';
+import { Biome } from './worlds/biome';
 
 // Initialize planets when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,7 +37,7 @@ function initPlanet(container: HTMLElement) {
     0.01,
     30
   );
-  camera.position.set(0, 0, 3);
+  camera.position.set(0, 0, 2.5);
   
   // Create renderer
   const renderer = new THREE.WebGLRenderer({
@@ -52,23 +53,20 @@ function initPlanet(container: HTMLElement) {
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
   controls.enablePan = false;
+  controls.minDistance = 1.5;
+  controls.maxDistance = 5;
   
   // Add lights
   const light = new THREE.DirectionalLight(0xffffff, 2);
-  light.position.set(2, 1, 0);
+  light.position.set(2, 1, 1).normalize();
   scene.add(light);
   
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
   
-  // Create a simple sphere to start with
-  const planetGeometry = new THREE.IcosahedronGeometry(1, 32);
-  const planetMaterial = new THREE.MeshStandardMaterial({
-    color: 0x22aa22,
-    roughness: 0.8,
-  });
-  const planet = new THREE.Mesh(planetGeometry, planetMaterial);
-  scene.add(planet);
+  // Create planet group
+  const planetGroup = new THREE.Group();
+  scene.add(planetGroup);
   
   // Setup background stars
   setupStars(scene);
@@ -92,7 +90,7 @@ function initPlanet(container: HTMLElement) {
     
     // Auto-rotate the planet if enabled
     if (autoRotate) {
-      planet.rotation.y += 0.001;
+      planetGroup.rotation.y += 0.001;
     }
     
     // Render the scene
@@ -102,8 +100,188 @@ function initPlanet(container: HTMLElement) {
   // Start animation
   animate();
   
+  // Generate initial planet
+  const planet = generatePlanet(preset);
+  planetGroup.add(planet);
+  
   // Add event listeners to buttons
-  setupButtonListeners(container, planet, preset);
+  setupButtonListeners(container, planetGroup, preset);
+}
+
+/**
+ * Generate a planet with terrain and features
+ */
+function generatePlanet(preset: string) {
+  const planetGroup = new THREE.Group();
+  
+  // Get planet options
+  const planetOptions = planetPresets[preset] || planetPresets.forest;
+  const biomePreset = biomePresets[planetOptions.biome.preset] || biomePresets.forest;
+  
+  // Create biome
+  const biome = new Biome(biomePreset);
+  
+  // Create detailed planet geometry
+  const resolution = 64; // Higher = more detailed but slower
+  const planetGeometry = new THREE.IcosahedronGeometry(1, Math.min(4, resolution / 16));
+  
+  // Create ground and water materials
+  const groundMaterial = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.8,
+    flatShading: true,
+  });
+  
+  const waterMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(biomePreset.seaColors?.[1]?.[1] || 0x0066ff),
+    roughness: 0.2,
+    metalness: 0.1,
+    transparent: true,
+    opacity: 0.9,
+  });
+  
+  // Clone geometry for water
+  const waterGeometry = planetGeometry.clone();
+
+  // Generate terrain
+  generateTerrain(planetGeometry, biome);
+  generateWater(waterGeometry);
+  
+  // Create meshes
+  const groundMesh = new THREE.Mesh(planetGeometry, groundMaterial);
+  const waterMesh = new THREE.Mesh(waterGeometry, waterMaterial);
+  waterMesh.scale.setScalar(1.01); // Slightly larger to avoid z-fighting
+  
+  // Add meshes to group
+  planetGroup.add(groundMesh);
+  planetGroup.add(waterMesh);
+  
+  // Add atmosphere
+  const atmosphere = createAtmosphere(biomePreset);
+  planetGroup.add(atmosphere);
+  
+  return planetGroup;
+}
+
+/**
+ * Generate terrain with height and color based on noise
+ */
+function generateTerrain(geometry: THREE.BufferGeometry, biome: Biome) {
+  // Get position attribute
+  const positionAttribute = geometry.getAttribute('position') as THREE.BufferAttribute;
+  const positions = positionAttribute.array;
+  
+  // Create arrays for colors and modified positions
+  const colors = new Float32Array(positions.length);
+  const newPositions = new Float32Array(positions.length);
+  
+  // Create an array to store face info (for computing normals later)
+  const faces = [];
+  
+  // Process vertices
+  for (let i = 0; i < positions.length; i += 3) {
+    // Get original position
+    const x = positions[i];
+    const y = positions[i + 1];
+    const z = positions[i + 2];
+    
+    // Create position vector
+    const pos = new THREE.Vector3(x, y, z).normalize();
+    
+    // Get height from biome
+    const height = biome.getHeight(pos);
+    
+    // Apply height to position
+    newPositions[i] = pos.x * (1 + height);
+    newPositions[i + 1] = pos.y * (1 + height);
+    newPositions[i + 2] = pos.z * (1 + height);
+    
+    // Calculate normalized height for coloring
+    // Map from min-max height to -1 to 1 range
+    const normalizedHeight = (height - biome.min) / (biome.max - biome.min) * 2 - 1;
+    
+    // Calculate steepness (unused for now, could be used for more advanced coloring)
+    const steepness = 0;
+    
+    // Get color from biome
+    const color = biome.getColor(pos, normalizedHeight, steepness);
+    
+    // Set color
+    colors[i] = color.r;
+    colors[i + 1] = color.g;
+    colors[i + 2] = color.b;
+  }
+  
+  // Update geometry
+  geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  
+  // Compute vertex normals and update the geometry
+  geometry.computeVertexNormals();
+}
+
+/**
+ * Generate water sphere
+ */
+function generateWater(geometry: THREE.BufferGeometry) {
+  // For water, we keep a perfect sphere but at a height just below the lowest terrain point
+  const waterLevel = -0.02; // Adjust as needed
+  
+  // Get position attribute
+  const positionAttribute = geometry.getAttribute('position') as THREE.BufferAttribute;
+  const positions = positionAttribute.array;
+  
+  // Create array for modified positions
+  const newPositions = new Float32Array(positions.length);
+  
+  // Process vertices
+  for (let i = 0; i < positions.length; i += 3) {
+    // Get original position
+    const x = positions[i];
+    const y = positions[i + 1];
+    const z = positions[i + 2];
+    
+    // Create normalized position vector
+    const pos = new THREE.Vector3(x, y, z).normalize();
+    
+    // Apply water level height
+    newPositions[i] = pos.x * (1 + waterLevel);
+    newPositions[i + 1] = pos.y * (1 + waterLevel);
+    newPositions[i + 2] = pos.z * (1 + waterLevel);
+  }
+  
+  // Update geometry
+  geometry.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+  
+  // Compute vertex normals and update the geometry
+  geometry.computeVertexNormals();
+}
+
+/**
+ * Create atmosphere effect
+ */
+function createAtmosphere(biomeOptions: any) {
+  // Determine atmosphere color based on biome
+  let atmosphereColor = new THREE.Color(0x88aaff);
+  
+  // Use sea color as a hint for atmosphere
+  if (biomeOptions.seaColors && biomeOptions.seaColors.length > 0) {
+    const seaColor = biomeOptions.seaColors[biomeOptions.seaColors.length - 1][1];
+    atmosphereColor = new THREE.Color(seaColor);
+    // Make it more transparent/lighter
+    atmosphereColor.offsetHSL(0, -0.2, 0.2);
+  }
+  
+  // Create geometry and material
+  const geometry = new THREE.SphereGeometry(1.02, 32, 32);
+  const material = new THREE.MeshBasicMaterial({
+    color: atmosphereColor,
+    transparent: true,
+    opacity: 0.15,
+    side: THREE.BackSide,
+  });
+  
+  return new THREE.Mesh(geometry, material);
 }
 
 /**
@@ -144,7 +322,7 @@ function setupStars(scene: THREE.Scene) {
 /**
  * Setup event listeners for the planet control buttons
  */
-function setupButtonListeners(container: HTMLElement, planet: THREE.Mesh, currentPreset: string) {
+function setupButtonListeners(container: HTMLElement, planetGroup: THREE.Group, currentPreset: string) {
   // Get all preset buttons
   const presetButtons = container.querySelectorAll('.bonsai-planet-preset');
   
@@ -153,8 +331,23 @@ function setupButtonListeners(container: HTMLElement, planet: THREE.Mesh, curren
     button.addEventListener('click', () => {
       const preset = (button as HTMLElement).dataset.preset;
       if (preset && planetPresets[preset]) {
-        // Update the planet appearance based on the preset
-        updatePlanetAppearance(planet, preset);
+        // Remove old planet
+        while (planetGroup.children.length > 0) {
+          const child = planetGroup.children[0];
+          planetGroup.remove(child);
+          if (child instanceof THREE.Mesh) {
+            child.geometry.dispose();
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        }
+        
+        // Create new planet
+        const newPlanet = generatePlanet(preset);
+        planetGroup.add(newPlanet);
         
         // Update active button state
         presetButtons.forEach(btn => btn.classList.remove('bp-opacity-100'));
@@ -167,56 +360,130 @@ function setupButtonListeners(container: HTMLElement, planet: THREE.Mesh, curren
   const randomButton = container.querySelector('.bonsai-planet-random');
   if (randomButton) {
     randomButton.addEventListener('click', () => {
-      // Generate a random planet appearance
-      generateRandomPlanet(planet);
+      // Generate a random planet
+      generateRandomPlanet(planetGroup);
     });
   }
-  
-  // Set initial planet appearance
-  updatePlanetAppearance(planet, currentPreset);
 }
 
 /**
- * Update the planet's appearance based on a preset
+ * Generate a random planet
  */
-function updatePlanetAppearance(planet: THREE.Mesh, preset: string) {
-  if (!planetPresets[preset]) return;
-  
-  const options = planetPresets[preset];
-  const biome = options.biome;
-  
-  // For now just update the color to match the preset theme
-  if (biome && biome.preset && biomePresets[biome.preset]) {
-    const biomeOptions = biomePresets[biome.preset];
-    
-    // Get the middle color from the biome colors
-    if (biomeOptions.colors && biomeOptions.colors.length > 0) {
-      const middleColorIndex = Math.floor(biomeOptions.colors.length / 2);
-      const color = biomeOptions.colors[middleColorIndex][1];
-      
-      if (planet.material instanceof THREE.MeshStandardMaterial) {
-        planet.material.color.set(color);
+function generateRandomPlanet(planetGroup: THREE.Group) {
+  // Remove old planet
+  while (planetGroup.children.length > 0) {
+    const child = planetGroup.children[0];
+    planetGroup.remove(child);
+    if (child instanceof THREE.Mesh) {
+      child.geometry.dispose();
+      if (Array.isArray(child.material)) {
+        child.material.forEach(m => m.dispose());
+      } else {
+        child.material.dispose();
       }
     }
   }
+  
+  // Create randomized biome
+  const randomBiome = createRandomBiome();
+  
+  // Create detailed planet geometry
+  const resolution = 64;
+  const planetGeometry = new THREE.IcosahedronGeometry(1, Math.min(4, resolution / 16));
+  
+  // Create ground and water materials
+  const groundMaterial = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.8,
+    flatShading: true,
+  });
+  
+  const waterMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(randomBiome.seaColors?.[1]?.[1] || 0x0066ff),
+    roughness: 0.2,
+    metalness: 0.1,
+    transparent: true,
+    opacity: 0.9,
+  });
+  
+  // Clone geometry for water
+  const waterGeometry = planetGeometry.clone();
+
+  // Generate terrain
+  const biome = new Biome(randomBiome);
+  generateTerrain(planetGeometry, biome);
+  generateWater(waterGeometry);
+  
+  // Create meshes
+  const groundMesh = new THREE.Mesh(planetGeometry, groundMaterial);
+  const waterMesh = new THREE.Mesh(waterGeometry, waterMaterial);
+  waterMesh.scale.setScalar(1.01); // Slightly larger to avoid z-fighting
+  
+  // Add meshes to group
+  planetGroup.add(groundMesh);
+  planetGroup.add(waterMesh);
+  
+  // Add atmosphere
+  const atmosphere = createAtmosphere(randomBiome);
+  planetGroup.add(atmosphere);
 }
 
 /**
- * Generate a random planet appearance
+ * Create a random biome configuration
  */
-function generateRandomPlanet(planet: THREE.Mesh) {
-  // Create a random color
+function createRandomBiome() {
+  // Create a random hue for the planet
   const hue = Math.random();
-  const saturation = 0.5 + Math.random() * 0.5;
-  const lightness = 0.4 + Math.random() * 0.4;
+  const waterHue = (hue + 0.5) % 1; // Complementary color for water
   
-  const color = new THREE.Color().setHSL(hue, saturation, lightness);
-  
-  // Apply the color to the planet
-  if (planet.material instanceof THREE.MeshStandardMaterial) {
-    planet.material.color.copy(color);
-    planet.material.roughness = Math.random() * 0.7 + 0.3;
+  // Generate ground colors
+  const groundColors: [number, number][] = [];
+  for (let i = -0.5; i <= 1.0; i += 0.5) {
+    const colorHue = hue + (Math.random() * 0.1 - 0.05);
+    const colorSat = 0.5 + Math.random() * 0.5;
+    const colorLit = 0.3 + Math.random() * 0.3;
+    
+    const color = new THREE.Color().setHSL(colorHue, colorSat, colorLit);
+    groundColors.push([i, color.getHex()]);
   }
+  
+  // Generate water colors
+  const seaColors: [number, number][] = [];
+  for (let i = -1; i <= -0.1; i += 0.45) {
+    const colorHue = waterHue + (Math.random() * 0.1 - 0.05);
+    const colorSat = 0.6 + Math.random() * 0.4;
+    const colorLit = 0.2 + i * 0.1 + Math.random() * 0.2;
+    
+    const color = new THREE.Color().setHSL(colorHue, colorSat, colorLit);
+    seaColors.push([i, color.getHex()]);
+  }
+  
+  // Create biome options
+  return {
+    noise: {
+      min: -0.05,
+      max: 0.05,
+      octaves: 2 + Math.floor(Math.random() * 4),
+      lacunarity: 1.5 + Math.random() * 1.0,
+      gain: {
+        min: 0.1 + Math.random() * 0.2,
+        max: 0.6 + Math.random() * 0.4,
+        scale: 1 + Math.random() * 2,
+      },
+      warp: 0.1 + Math.random() * 0.5,
+      scale: 0.8 + Math.random() * 0.4,
+      power: 0.7 + Math.random() * 1.0,
+    },
+    
+    colors: groundColors,
+    
+    seaColors: seaColors,
+    seaNoise: {
+      min: -0.005 - Math.random() * 0.005,
+      max: 0.002 + Math.random() * 0.006,
+      scale: 3 + Math.random() * 4,
+    },
+  };
 }
 
 // Define biome and planet presets
