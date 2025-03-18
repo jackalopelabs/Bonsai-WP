@@ -62,26 +62,55 @@ class BonsaiPlanets {
         // Register shortcode
         add_shortcode('bonsai_planet', [$this, 'planetShortcode']);
 
-        // Register Blade directive if using Sage
-        if (function_exists('Roots\view')) {
-            add_action('acorn/init', function () {
-                $this->registerBladeDirective();
-            });
-        }
+        // Register Blade directive
+        $this->registerSageDirective();
     }
 
     /**
-     * Register the Blade directive
+     * Register Blade directive
      */
-    private function registerBladeDirective() {
-        if (!function_exists('Roots\view')) {
-            return;
-        }
+    private function registerSageDirective() {
+        // Method 1: Add via sage/blade/directives filter (requires Sage 10+)
+        add_filter('sage/blade/directives', function ($directives) {
+            $directives['bonsaiPlanet'] = function($expression) {
+                return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
+            };
+            return $directives;
+        });
 
-        $blade = \Roots\view()->getEngineResolver()->resolve('blade')->getCompiler();
-        
-        $blade->directive('bonsaiPlanet', function ($expression) {
-            return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
+        // Method 2: Add via app service provider (requires Sage 10+)
+        add_action('after_setup_theme', function() {
+            if (function_exists('Roots\app')) {
+                Roots\app()->singleton('sage.directives', function () {
+                    return [
+                        'bonsaiPlanet' => function ($expression) {
+                            return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
+                        },
+                    ];
+                });
+            }
+        });
+
+        // Method 3: Direct hook into blade compiler 
+        add_action('after_setup_theme', function() {
+            if (function_exists('Roots\app') && method_exists(Roots\app(), 'make')) {
+                try {
+                    $blade = Roots\app()->make('blade.compiler');
+                    $blade->directive('bonsaiPlanet', function ($expression) {
+                        return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
+                    });
+                    error_log('Bonsai Planets: Directive registered with blade compiler directly');
+                } catch (\Exception $e) {
+                    error_log('Bonsai Planets: Error registering blade directive: ' . $e->getMessage());
+                }
+            }
+        }, 20);
+
+        // Method 4: Add via WordPress action for debugging
+        add_action('wp_footer', function() {
+            // Check if these functions exist to help with debugging
+            error_log('Function Roots\\app exists: ' . (function_exists('Roots\\app') ? 'Yes' : 'No'));
+            error_log('Function Roots\\view exists: ' . (function_exists('Roots\\view') ? 'Yes' : 'No'));
         });
     }
 
