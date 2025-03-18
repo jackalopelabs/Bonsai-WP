@@ -65,8 +65,14 @@ class BonsaiPlanets {
         // Register shortcode
         add_shortcode('bonsai_planet', [$this, 'planetShortcode']);
         
-        // Register Blade directive
-        $this->registerBladeDirective();
+        // Register Sage service provider if Sage is active
+        if (class_exists('\Roots\Acorn\Application')) {
+            add_action('after_setup_theme', function() {
+                if (function_exists('Roots\app')) {
+                    Roots\app()->register(\BonsaiPlanets\SageServiceProvider::class);
+                }
+            }, 20);
+        }
     }
 
     /**
