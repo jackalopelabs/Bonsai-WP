@@ -5,7 +5,7 @@
 
 namespace BonsaiPlanets;
 
-use Roots\Acorn\ServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
 class SageServiceProvider extends ServiceProvider
 {
@@ -26,8 +26,8 @@ class SageServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if ($this->app->bound('blade')) {
-            $this->app->make('blade')->directive('bonsaiPlanet', function ($expression) {
+        if ($this->app->bound('blade.compiler')) {
+            $this->app->make('blade.compiler')->directive('bonsaiPlanet', function ($expression) {
                 return "<?php 
                 // Parse the expression to extract attributes
                 \$planetExpression = $expression;

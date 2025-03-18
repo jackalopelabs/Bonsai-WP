@@ -65,14 +65,24 @@ class BonsaiPlanets {
         // Register shortcode
         add_shortcode('bonsai_planet', [$this, 'planetShortcode']);
         
-        // Register Sage service provider if Sage is active
-        if (class_exists('\Roots\Acorn\Application')) {
-            add_action('after_setup_theme', function() {
-                if (function_exists('Roots\app')) {
-                    Roots\app()->register(\BonsaiPlanets\SageServiceProvider::class);
+        // Register with Sage/Acorn if available
+        add_action('acorn/init', function() {
+            if (class_exists('\Illuminate\Support\ServiceProvider')) {
+                acorn()->register(\BonsaiPlanets\SageServiceProvider::class);
+                
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('Bonsai Planets: Service provider registered with Acorn');
                 }
-            }, 20);
-        }
+            }
+        });
+        
+        // Fallback for non-Acorn environments
+        add_filter('sage/blade/directives', function($directives) {
+            $directives['bonsaiPlanet'] = function($expression) {
+                return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
+            };
+            return $directives;
+        });
     }
 
     /**
