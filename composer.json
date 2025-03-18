@@ -1,6 +1,6 @@
 {
-  "name": "jackalopelabs/bonsai-planets",
-  "description": "Interactive 3D planets built with Three.js for WordPress",
+  "name": "jackalopelabs/bonsai-wp",
+  "description": "Bonsai features for Bonsai-CLI builds, games, and more",
   "type": "wordpress-plugin",
   "license": "MIT",
   "authors": [
