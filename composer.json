@@ -1,42 +1,49 @@
 {
-  "name": "jackalopelabs/bonsai-wp",
-  "description": "Bonsai features for Bonsai-CLI builds, games, and more",
-  "type": "wordpress-plugin",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Mason Lawlor",
-      "email": "mason@jackalope.io"
-    }
-  ],
-  "require": {
-    "php": ">=7.4",
-    "composer/installers": "^2.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "BonsaiPlanets\\": "src/"
-    }
-  },
-  "extra": {
-    "installer-paths": {
-      "../../plugins/{$name}/": ["type:wordpress-plugin"]
-    }
-  },
-  "config": {
-    "allow-plugins": {
-      "composer/installers": true
-    }
-  },
-  "scripts": {
-    "post-install-cmd": [
-      "npm install"
+    "name": "jackalopelabs/bonsai-planets-wp",
+    "description": "Interactive 3D planets with ThreeJS for Sage 11 themes",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jackalope Labs",
+            "email": "info@jackalopelabs.com"
+        }
     ],
-    "post-update-cmd": [
-      "npm install"
+    "keywords": [
+        "wordpress",
+        "plugin",
+        "sage",
+        "threejs",
+        "planets"
     ],
-    "build": [
-      "npm run build"
-    ]
-  }
+    "require": {
+        "php": ">=7.4",
+        "composer/installers": "^1.0 || ^2.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "BonsaiPlanets\\": "src/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    },
+    "extra": {
+        "installer-paths": {
+            "../../plugins/{$name}/": ["type:wordpress-plugin"]
+        }
+    },
+    "scripts": {
+        "lint": "phpcs",
+        "build": "npm run build"
+    },
+    "support": {
+        "issues": "https://github.com/jackalopelabs/bonsai-planets-wp/issues",
+        "source": "https://github.com/jackalopelabs/bonsai-planets-wp"
+    }
 } 
