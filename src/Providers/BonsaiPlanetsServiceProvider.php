@@ -23,10 +23,14 @@ class BonsaiPlanetsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Register Blade directives
-        if (function_exists('Roots\view')) {
-            $this->registerBladeDirectives();
+        // Debug: Check if we're in a Sage environment
+        if (!function_exists('Roots\view')) {
+            error_log('Bonsai Planets: Not in a Sage environment');
+            return;
         }
+
+        // Register Blade directives
+        $this->registerBladeDirectives();
 
         // Add assets to view
         add_filter('sage/assets/scripts', [$this, 'enqueueScripts']);
@@ -40,7 +44,16 @@ class BonsaiPlanetsServiceProvider extends ServiceProvider
      */
     protected function registerBladeDirectives()
     {
+        // Debug: Log when directive is being registered
+        error_log('Bonsai Planets: Registering Blade directive');
+
         $this->app->make('blade.compiler')->directive('bonsaiPlanet', function ($expression) {
+            // Debug: Log the expression being processed
+            error_log('Bonsai Planets: Processing directive with expression: ' . $expression);
+            
+            // Ensure the expression is properly escaped
+            $expression = str_replace("'", "\\'", $expression);
+            
             return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
         });
     }
@@ -53,6 +66,9 @@ class BonsaiPlanetsServiceProvider extends ServiceProvider
      */
     public function enqueueScripts($scripts)
     {
+        // Debug: Log script registration
+        error_log('Bonsai Planets: Registering scripts');
+
         $scripts['bonsai-planets'] = [
             'path' => BONSAI_PLANETS_ASSETS . 'js/bonsai-planets-bundle.js',
             'dependencies' => [],
@@ -70,6 +86,9 @@ class BonsaiPlanetsServiceProvider extends ServiceProvider
      */
     public function enqueueStyles($styles)
     {
+        // Debug: Log style registration
+        error_log('Bonsai Planets: Registering styles');
+
         $styles['bonsai-planets'] = [
             'path' => BONSAI_PLANETS_ASSETS . 'css/bonsai-planets.css',
             'dependencies' => [],

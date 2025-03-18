@@ -61,6 +61,28 @@ class BonsaiPlanets {
         
         // Register shortcode
         add_shortcode('bonsai_planet', [$this, 'planetShortcode']);
+
+        // Register Blade directive if using Sage
+        if (function_exists('Roots\view')) {
+            add_action('acorn/init', function () {
+                $this->registerBladeDirective();
+            });
+        }
+    }
+
+    /**
+     * Register the Blade directive
+     */
+    private function registerBladeDirective() {
+        if (!function_exists('Roots\view')) {
+            return;
+        }
+
+        $blade = \Roots\view()->getEngineResolver()->resolve('blade')->getCompiler();
+        
+        $blade->directive('bonsaiPlanet', function ($expression) {
+            return "<?php echo do_shortcode('[bonsai_planet ' . {$expression} . ']'); ?>";
+        });
     }
 
     /**
