@@ -2,11 +2,6 @@
 node_modules/
 vendor/
 
-# Build output
-/public/css/
-/public/js/
-/public/manifest.json
-
 # Environment files
 .env
 .env.*
