@@ -119,4 +119,4 @@ if (!class_exists('BonsaiPlanets\\Frontend\\Planets')):
 endif;
 
 // Hook into WordPress
-add_action('plugins_loaded', 'bonsai_planets_init'); 
+add_action('plugins_loaded', 'BonsaiPlanets\\Frontend\\bonsai_planets_init'); 
