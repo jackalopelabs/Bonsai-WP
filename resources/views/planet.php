@@ -2,6 +2,7 @@
   class="bonsai-planet" 
   data-preset="<?php echo esc_attr($atts['preset']); ?>"
   data-autorotate="<?php echo esc_attr($atts['autorotate']); ?>"
+  data-resolution="<?php echo esc_attr($atts['resolution']); ?>"
   style="width: <?php echo esc_attr($atts['width']); ?>; height: <?php echo esc_attr($atts['height']); ?>;">
   <canvas class="bonsai-planet-canvas"></canvas>
   

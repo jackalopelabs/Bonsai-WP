@@ -88,6 +88,7 @@ if (!function_exists('bonsai_planets_shortcode')):
             'height' => '600px',
             'controls' => 'true',
             'autorotate' => 'true',
+            'resolution' => '6',
         ], $atts);
         
         // Enqueue required assets

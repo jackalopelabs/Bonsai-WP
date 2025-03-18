@@ -101,7 +101,7 @@ function initPlanet(container: HTMLElement) {
   animate();
   
   // Generate initial planet
-  const planet = generatePlanet(preset);
+  const planet = generatePlanet(preset, container);
   planetGroup.add(planet);
   
   // Add event listeners to buttons
@@ -111,7 +111,7 @@ function initPlanet(container: HTMLElement) {
 /**
  * Generate a planet with terrain and features
  */
-function generatePlanet(preset: string) {
+function generatePlanet(preset: string, container: HTMLElement) {
   const planetGroup = new THREE.Group();
   
   // Get planet options
@@ -122,13 +122,14 @@ function generatePlanet(preset: string) {
   const biome = new Biome(biomePreset);
   
   // Create detailed planet geometry
-  const resolution = 64; // Higher = more detailed but slower
-  const planetGeometry = new THREE.IcosahedronGeometry(1, Math.min(4, resolution / 16));
+  const resolution = parseInt(container.dataset.resolution || '6', 10);
+  const planetGeometry = new THREE.IcosahedronGeometry(1, resolution);
   
   // Create ground and water materials
   const groundMaterial = new THREE.MeshStandardMaterial({
     vertexColors: true,
     roughness: 0.8,
+    metalness: 0.2,
     flatShading: true,
   });
   
@@ -346,7 +347,7 @@ function setupButtonListeners(container: HTMLElement, planetGroup: THREE.Group, 
         }
         
         // Create new planet
-        const newPlanet = generatePlanet(preset);
+        const newPlanet = generatePlanet(preset, container);
         planetGroup.add(newPlanet);
         
         // Update active button state
@@ -361,7 +362,7 @@ function setupButtonListeners(container: HTMLElement, planetGroup: THREE.Group, 
   if (randomButton) {
     randomButton.addEventListener('click', () => {
       // Generate a random planet
-      generateRandomPlanet(planetGroup);
+      generateRandomPlanet(planetGroup, container);
     });
   }
 }
@@ -369,7 +370,7 @@ function setupButtonListeners(container: HTMLElement, planetGroup: THREE.Group, 
 /**
  * Generate a random planet
  */
-function generateRandomPlanet(planetGroup: THREE.Group) {
+function generateRandomPlanet(planetGroup: THREE.Group, container: HTMLElement) {
   // Remove old planet
   while (planetGroup.children.length > 0) {
     const child = planetGroup.children[0];
@@ -388,13 +389,14 @@ function generateRandomPlanet(planetGroup: THREE.Group) {
   const randomBiome = createRandomBiome();
   
   // Create detailed planet geometry
-  const resolution = 64;
-  const planetGeometry = new THREE.IcosahedronGeometry(1, Math.min(4, resolution / 16));
+  const resolution = parseInt(container.dataset.resolution || '6', 10);
+  const planetGeometry = new THREE.IcosahedronGeometry(1, resolution);
   
   // Create ground and water materials
   const groundMaterial = new THREE.MeshStandardMaterial({
     vertexColors: true,
     roughness: 0.8,
+    metalness: 0.2,
     flatShading: true,
   });
   

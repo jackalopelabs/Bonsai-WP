@@ -145,7 +145,7 @@ class Bonsai_Planets {
                 'width'              => '100%',
                 'height'             => '400px',
                 'radius'             => '1.0',
-                'resolution'         => '64',
+                'resolution'         => '6',
                 'seed'               => mt_rand( 1, 1000000 ),
                 'water-level'        => '0.4',
                 'has-atmosphere'     => 'true',
