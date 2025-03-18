@@ -18,7 +18,7 @@ const initializedPlanets = new Map();
  * Initialize a bonsai planet in a container
  * @param {string} canvasId - The ID of the canvas element
  */
-function initBonsaiPlanet(canvasId: string) {
+export function initBonsaiPlanet(canvasId: string) {
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
   if (!canvas) {
     console.error(`Canvas with ID ${canvasId} not found`);

@@ -47,7 +47,7 @@ class SageServiceProvider extends ServiceProvider
                 \$height = \$planetAttrs['height'] ?? '500px';
                 
                 // Include the template
-                \$templatePath = WP_PLUGIN_DIR . '/bonsai-planets-wp/includes/planet-template.php';
+                \$templatePath = WP_PLUGIN_DIR . '/bonsai-wp/includes/planet-template.php';
                 
                 if (file_exists(\$templatePath)) {
                     include \$templatePath;

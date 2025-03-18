@@ -100,7 +100,7 @@ class BonsaiPlanets {
                                 \$id = {$attributes['id']};
                                 \$width = {$attributes['width']};
                                 \$height = {$attributes['height']};
-                                echo \$this->renderPlanet(\$id, \$width, \$height);
+                                echo do_shortcode('[bonsai_planet id=\"' . \$id . '\" width=\"' . \$width . '\" height=\"' . \$height . '\"]');
                             ?>";
                         },
                     ];
@@ -172,7 +172,7 @@ class BonsaiPlanets {
         // Register main bundle with type="module"
         wp_register_script(
             'bonsai-planets-bundle',
-            plugin_dir_url(__FILE__) . 'assets/js/main-bundle.js',
+            plugins_url('assets/js/main-bundle.js', __FILE__),
             ['threejs'],
             '1.0.0',
             true
@@ -182,7 +182,7 @@ class BonsaiPlanets {
         // Register styles with correct MIME type
         wp_register_style(
             'bonsai-planets-style',
-            plugin_dir_url(__FILE__) . 'assets/css/main.css',
+            plugins_url('assets/css/main.css', __FILE__),
             [],
             '1.0.0'
         );
@@ -204,6 +204,11 @@ class BonsaiPlanets {
             'height' => '600px',
             'width' => '100%',
         ], $atts);
+
+        // Extract values
+        $id = $atts['id'];
+        $height = $atts['height'];
+        $width = $atts['width'];
 
         // Enqueue required assets
         wp_enqueue_script('threejs');

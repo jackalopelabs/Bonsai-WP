@@ -12,7 +12,7 @@ $id = $id ?? 'bonsai-planet-' . uniqid();
 $width = $width ?? '100%';
 $height = $height ?? '500px';
 ?>
-<div id="planet-container-<?php echo esc_attr($id); ?>" class="planet-container" style="position: relative; width: <?php echo esc_attr($width); ?>; height: <?php echo esc_attr($height); ?>;">
+<div id="planet-container-<?php echo esc_attr($id); ?>" class="planet-container bonsai-planet-container" style="position: relative; width: <?php echo esc_attr($width); ?>; height: <?php echo esc_attr($height); ?>;">
     <canvas id="planet-canvas-<?php echo esc_attr($id); ?>" style="width: 100%; height: 100%;"></canvas>
     <div class="planet-controls" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; border-radius: 5px; font-size: 14px;">
         <h3 style="margin: 0 0 10px 0;">Controls</h3>
@@ -37,16 +37,31 @@ $height = $height ?? '500px';
             return;
         }
 
-        // Initialize the planet
-        try {
-            const { initPlanet } = await import('<?php echo esc_url(plugin_dir_url(__FILE__) . '../assets/js/main-bundle.js'); ?>');
-            initPlanet(canvas, {
-                width: container.clientWidth,
-                height: container.clientHeight,
-                id: '<?php echo esc_attr($id); ?>'
-            });
-        } catch (error) {
-            console.error('Failed to initialize planet:', error);
+        // Simple fallback renderer that doesn't depend on imports
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(70, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.z = 2.5;
+        
+        // Create a simple rotating sphere
+        const geometry = new THREE.IcosahedronGeometry(1, 2);
+        const material = new THREE.MeshNormalMaterial();
+        const planet = new THREE.Mesh(geometry, material);
+        scene.add(planet);
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            planet.rotation.x += 0.005;
+            planet.rotation.y += 0.01;
+            renderer.render(scene, camera);
         }
+        
+        // Load Three.js and start animation
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.min.js';
+        script.onload = animate;
+        document.head.appendChild(script);
     });
 </script> 
