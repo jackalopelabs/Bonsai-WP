@@ -2,44 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+ * Bonsai Planets WordPress Plugin Styles 
+ */
+
 @layer components {
-  .bonsai-planet {
-    @apply bp-relative bp-overflow-hidden bp-rounded-lg bp-bg-black;
-    min-height: 300px;
+  .bp-planet-container {
+    @apply bp-relative bp-overflow-hidden bp-rounded-lg bp-bg-opacity-5 bp-bg-black bp-min-h-[300px] bp-my-4 bp-shadow-planet bp-transition-all bp-duration-300;
   }
   
-  .bonsai-planet-canvas {
-    @apply bp-absolute bp-inset-0 bp-w-full bp-h-full;
+  .bp-planet-container:hover {
+    @apply bp-shadow-planet-hover;
   }
   
-  .bonsai-planet-controls {
-    @apply bp-absolute bp-top-2 bp-left-2 bp-flex bp-flex-wrap bp-gap-2 bp-p-2 bp-rounded bp-bg-black/50 bp-z-10;
+  .bp-planet-container canvas {
+    @apply bp-block bp-w-full bp-h-full bp-outline-none;
   }
   
-  .bonsai-planet-controls button {
-    @apply bp-px-3 bp-py-1 bp-rounded-md bp-text-white bp-text-sm bp-transition-colors;
+  .bp-planet-loading {
+    @apply bp-absolute bp-inset-0 bp-flex bp-items-center bp-justify-center bp-bg-white bp-bg-opacity-70 bp-z-10;
   }
   
-  .bonsai-planet-preset[data-preset="beach"] {
-    @apply bp-bg-planet-beach hover:bp-bg-planet-beach/70;
+  .bp-planet-loading::after {
+    content: '';
+    @apply bp-w-10 bp-h-10 bp-border-4 bp-border-gray-200 bp-border-t-blue-500 bp-rounded-full bp-animate-spin-slow;
   }
   
-  .bonsai-planet-preset[data-preset="forest"] {
-    @apply bp-bg-planet-green hover:bp-bg-planet-green/70;
+  .bp-planet-error {
+    @apply bp-absolute bp-inset-0 bp-flex bp-items-center bp-justify-center bp-bg-white bp-bg-opacity-90 bp-z-20 bp-p-5 bp-text-center bp-text-red-500 bp-text-sm;
   }
-  
-  .bonsai-planet-preset[data-preset="snowForest"] {
-    @apply bp-bg-planet-snow bp-text-black hover:bp-bg-planet-snow/70;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .bp-planet-container {
+    @apply bp-min-h-[250px];
   }
-  
-  .bonsai-planet-random {
-    @apply bp-bg-purple-600 hover:bp-bg-purple-600/70;
-  }
-  
-  /* Responsive controls */
-  @media (max-width: 640px) {
-    .bonsai-planet-controls {
-      @apply bp-bottom-2 bp-top-auto bp-left-2 bp-right-2 bp-justify-center;
-    }
+}
+
+@media screen and (max-width: 480px) {
+  .bp-planet-container {
+    @apply bp-min-h-[200px];
   }
 } 

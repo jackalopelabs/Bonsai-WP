@@ -1,33 +1,51 @@
 import { defineConfig } from 'vite';
-import path from 'path';
+import { resolve } from 'path';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  root: path.resolve(__dirname, 'resources'),
-  base: '/wp-content/plugins/bonsai-planets/public/',
+  plugins: [
+    react()
+  ],
+  root: resolve(__dirname, 'resources'),
+  base: '/wp-content/plugins/bonsai-planets-wp/dist/',
   
   build: {
-    outDir: path.resolve(__dirname, 'public'),
+    target: 'esnext',
+    outDir: resolve(__dirname, 'dist'),
     emptyOutDir: true,
     manifest: true,
     
     rollupOptions: {
       input: {
-        app: path.resolve(__dirname, 'resources/scripts/app.ts')
+        'bonsai-planets': resolve(__dirname, 'resources/scripts/tiny-planets.ts'),
+        'block': resolve(__dirname, 'resources/scripts/block.tsx'),
       },
       
+      // External dependencies that shouldn't be bundled
+      external: [
+        'react', 
+        'react-dom', 
+        '@wordpress/blocks', 
+        '@wordpress/block-editor', 
+        '@wordpress/components', 
+        '@wordpress/element',
+        '@wordpress/i18n'
+      ],
+      
       output: {
-        entryFileNames: 'js/[name].js',
-        chunkFileNames: 'js/[name].[hash].js',
-        assetFileNames: ({name}) => {
-          if (/\.(gif|jpe?g|png|svg)$/.test(name ?? '')) {
-            return 'images/[name][extname]';
-          }
-          
-          if (/\.css$/.test(name ?? '')) {
-            return 'css/[name][extname]';
-          }
-          
-          return 'assets/[name][extname]';
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name].js',
+        assetFileNames: '[name].[ext]',
+        
+        // Map external dependencies to global variables
+        globals: {
+          'react': 'React',
+          'react-dom': 'ReactDOM',
+          '@wordpress/blocks': 'wp.blocks',
+          '@wordpress/block-editor': 'wp.blockEditor',
+          '@wordpress/components': 'wp.components',
+          '@wordpress/element': 'wp.element',
+          '@wordpress/i18n': 'wp.i18n',
         },
       },
     },
@@ -41,11 +59,19 @@ export default defineConfig({
   
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'resources'),
+      '@': resolve(__dirname, 'resources'),
     },
   },
   
   optimizeDeps: {
-    include: ['three']
+    include: ['three', 'react', 'react-dom']
+  },
+  
+  // Temporarily disable TypeScript checking during build to avoid JSX errors
+  esbuild: {
+    jsxInject: `import React from 'react'`,
+    jsx: 'react',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment'
   }
 }); 

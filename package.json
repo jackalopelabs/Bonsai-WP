@@ -1,32 +1,42 @@
 {
-  "name": "bonsai-planets",
+  "name": "bonsai-planets-wp",
   "version": "1.0.0",
-  "description": "Interactive 3D planets built with Three.js for WordPress",
-  "main": "index.js",
+  "description": "A WordPress plugin that adds beautiful, interactive 3D procedural planets to your website.",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint resources/scripts --ext .js,.ts",
-    "format": "prettier --write resources"
+    "preview": "vite preview",
+    "lint": "eslint resources/scripts --ext .js,.ts,.tsx"
+  },
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "3d",
+    "planets",
+    "threejs"
+  ],
+  "author": "Your Name",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@types/three": "^0.152.1",
+    "@types/wordpress__block-editor": "^11.0.2",
+    "@types/wordpress__blocks": "^12.0.3",
+    "@types/wordpress__components": "^23.0.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.3",
+    "typescript": "^5.1.6",
+    "vite": "^4.4.5"
   },
   "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "simplex-noise": "^4.0.3",
-    "three": "^0.157.0"
-  },
-  "devDependencies": {
-    "@types/three": "^0.157.2",
-    "@wordpress/browserslist-config": "^6.20.0",
-    "autoprefixer": "^10.4.16",
-    "eslint": "^8.54.0",
-    "eslint-plugin-import": "^2.29.0",
-    "postcss": "^8.4.31",
-    "prettier": "^3.1.0",
-    "sass": "^1.69.5",
-    "tailwindcss": "^3.3.5",
-    "typescript": "^5.2.2",
-    "vite": "^4.5.0"
-  },
-  "browserslist": [
-    "extends @wordpress/browserslist-config"
-  ]
+    "three": "^0.152.2"
+  }
 }

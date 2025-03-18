@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bonsai Planets Development</title>
+  <link rel="stylesheet" href="./styles/app.css">
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Bonsai Planets Development</h1>
+    
+    <p class="mb-4">This is a development preview of the Bonsai Planets WordPress plugin. The interactive 3D planets should appear below:</p>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <!-- Default Planet -->
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2">Default Planet</h2>
+        <div id="default-planet" class="bp-planet-container" style="height: 300px;"></div>
+      </div>
+      
+      <!-- Earth-like Planet -->
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2">Earth-like Planet</h2>
+        <div 
+          id="earth-planet" 
+          class="bp-planet-container" 
+          style="height: 300px;"
+          data-water-level="0.4"
+          data-water-color="#0077be"
+          data-land-color="#3d5e3a"
+          data-mountain-color="#8c7853"
+          data-snow-color="#ffffff"
+          data-atmosphere-color="#aaccff">
+        </div>
+      </div>
+      
+      <!-- Desert Planet -->
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2">Desert Planet</h2>
+        <div 
+          id="desert-planet" 
+          class="bp-planet-container" 
+          style="height: 300px;"
+          data-water-level="0.2"
+          data-water-color="#a67c52"
+          data-land-color="#d9a066"
+          data-mountain-color="#aa6c39"
+          data-has-vegetation="false"
+          data-atmosphere-color="#f8d099">
+        </div>
+      </div>
+      
+      <!-- Alien Planet -->
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-2">Alien Planet</h2>
+        <div 
+          id="alien-planet" 
+          class="bp-planet-container" 
+          style="height: 300px;"
+          data-water-level="0.5"
+          data-water-color="#8844ff"
+          data-land-color="#44dd88"
+          data-mountain-color="#2288aa"
+          data-snow-color="#ddffee"
+          data-atmosphere-color="#aa88ff">
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4">Shortcode Usage</h2>
+      <pre class="bg-gray-100 p-4 rounded overflow-x-auto">
+[bonsai_planet]
+
+[bonsai_planet width="600px" height="400px" seed="42" water-level="0.35" water-color="#2288ff" land-color="#44aa44"]
+      </pre>
+    </div>
+  </div>
+  
+  <script type="module" src="./scripts/tiny-planets.ts"></script>
+</body>
+</html> 

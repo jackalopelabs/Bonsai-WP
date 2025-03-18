@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+ * Bonsai Planets Block Editor Styles 
+ */
+
+@layer components {
+  .bp-planet-editor-block {
+    @apply bp-border bp-border-dashed bp-border-gray-300 bp-rounded-lg bp-transition-all bp-duration-200;
+  }
+  
+  .bp-planet-editor-block:hover {
+    @apply bp-border-blue-500;
+  }
+  
+  .bp-planet-editor-block .dashicons {
+    @apply bp-mb-2 bp-text-blue-500;
+  }
+  
+  .bp-planet-editor-block p {
+    @apply bp-my-1 bp-text-gray-600;
+  }
+}
+
+/* Inspector controls styling */
+.components-panel .bp-planets-color-row {
+  @apply bp-mb-4;
+}
+
+.components-panel .bp-planets-color-row p {
+  @apply bp-mb-2 bp-font-medium;
+}
+
+.components-panel .components-range-control {
+  @apply bp-w-full;
+}
+
+/* Make color pickers more compact */
+.components-color-picker {
+  @apply bp-p-2;
+}
+
+.components-color-picker .components-color-picker__inputs-wrapper {
+  @apply bp-mb-2;
+}
+
+/* Responsive preview adjustments */
+@media (max-width: 782px) {
+  .bp-planet-editor-block {
+    min-height: 200px !important;
+  }
+} 
