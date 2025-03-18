@@ -1,42 +1,20 @@
 {
   "name": "bonsai-planets-wp",
   "version": "1.0.0",
-  "description": "Interactive 3D planets with ThreeJS for Sage 11 themes",
-  "main": "index.js",
+  "description": "Interactive 3D planets with ThreeJS for WordPress",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "copy-assets": "node scripts/copy-assets.js",
-    "setup": "npm install && npm run copy-assets"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jackalopelabs/bonsai-planets-wp.git"
-  },
-  "keywords": [
-    "wordpress",
-    "plugin",
-    "threejs",
-    "planets"
-  ],
-  "author": "Jackalope Labs",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/jackalopelabs/bonsai-planets-wp/issues"
-  },
-  "homepage": "https://github.com/jackalopelabs/bonsai-planets-wp#readme",
-  "devDependencies": {
-    "@types/node": "^20.11.18",
-    "@types/three": "^0.162.0",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^3.4.0",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.12"
+    "setup": "npm install && npm run build"
   },
   "dependencies": {
     "alpinejs": "^3.13.3",
-    "three": "^0.162.0"
+    "three": "^0.161.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.161.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
   }
 } 

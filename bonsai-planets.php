@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Bonsai Planets
  * Plugin URI: https://github.com/jackalopelabs/bonsai-planets-wp
- * Description: Interactive 3D planets with ThreeJS for Sage 11 themes
+ * Description: Interactive 3D planets with ThreeJS for WordPress
  * Version: 1.0.0
  * Author: Jackalope Labs
  * Author URI: https://jackalopelabs.com
@@ -121,16 +121,25 @@ class BonsaiPlanets {
         // Register the ThreeJS bundle
         wp_register_script(
             'bonsai-planets-bundle',
-            BONSAI_PLANETS_ASSETS . 'js/bonsai-planets-bundle.js',
-            [],
+            BONSAI_PLANETS_ASSETS . 'js/main-bundle.js',
+            ['three'],
             BONSAI_PLANETS_VERSION,
+            true
+        );
+
+        // Register ThreeJS as a dependency
+        wp_register_script(
+            'three',
+            'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.161.0/three.min.js',
+            [],
+            '0.161.0',
             true
         );
 
         // Register the plugin styles
         wp_register_style(
             'bonsai-planets-styles',
-            BONSAI_PLANETS_ASSETS . 'css/bonsai-planets.css',
+            BONSAI_PLANETS_ASSETS . 'css/main.css',
             [],
             BONSAI_PLANETS_VERSION
         );
@@ -148,6 +157,7 @@ class BonsaiPlanets {
         ], $atts);
 
         // Enqueue required assets
+        wp_enqueue_script('three');
         wp_enqueue_script('bonsai-planets-bundle');
         wp_enqueue_style('bonsai-planets-styles');
 

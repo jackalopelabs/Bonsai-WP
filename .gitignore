@@ -2,11 +2,6 @@
 /node_modules
 /vendor
 
-# Build output
-/assets/js
-/assets/css
-/assets/images
-
 # Development files
 .DS_Store
 .env
@@ -26,6 +21,6 @@ Desktop.ini
 *.zip
 *.tar.gz
 
-# Optimized source files
-/public/lowpoly_nature
-/src/worlds 
+# Development source files (these should be built and included in the plugin)
+/src/worlds
+/public/lowpoly_nature 
