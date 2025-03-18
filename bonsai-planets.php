@@ -55,13 +55,16 @@ class BonsaiPlanets {
     /**
      * Initialize the plugin
      */
-    private function init() {
-        // Register scripts and styles
+    public function init() {
+        // Load the Sage filter early for Blade directive registration
+        require_once plugin_dir_path(__FILE__) . 'includes/sage-filter.php';
+        
+        // Register assets
         add_action('wp_enqueue_scripts', [$this, 'registerAssets']);
         
         // Register shortcode
         add_shortcode('bonsai_planet', [$this, 'planetShortcode']);
-
+        
         // Register Blade directive
         $this->registerBladeDirective();
     }
@@ -70,30 +73,71 @@ class BonsaiPlanets {
      * Register Blade directive
      */
     public function registerBladeDirective() {
-        if (!class_exists('\Roots\Sage\Blade\Blade')) {
-            return;
-        }
-
-        $blade = \Roots\Sage\Blade\Blade::getInstance();
-        $blade->directive('bonsaiPlanet', function ($expression) {
-            // Parse the attributes string
-            $attributes = [];
-            if (preg_match_all('/(\w+)\s*=\s*["\']([^"\']+)["\']/', $expression, $matches)) {
-                for ($i = 0; $i < count($matches[1]); $i++) {
-                    $attributes[$matches[1][$i]] = $matches[2][$i];
+        // Use the Sage app container to register the directive properly
+        add_action('after_setup_theme', function() {
+            if (function_exists('Roots\app') && is_callable([Roots\app(), 'singleton'])) {
+                Roots\app()->singleton('sage.directives', function () {
+                    return [
+                        'bonsaiPlanet' => function ($expression) {
+                            $attributes = $this->parseExpression($expression);
+                            return "<?php
+                                \$id = {$attributes['id']};
+                                \$width = {$attributes['width']};
+                                \$height = {$attributes['height']};
+                                echo \$this->renderPlanet(\$id, \$width, \$height);
+                            ?>";
+                        },
+                    ];
+                });
+                
+                // Add debug information
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('Bonsai Planets: Directive registered with Sage app container');
+                }
+            } else {
+                // Fallback for non-Sage themes
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('Bonsai Planets: Sage app() function not found, using shortcode fallback');
                 }
             }
-
-            // Set default values
-            $id = $attributes['id'] ?? 'bonsai-planet-' . uniqid();
-            $width = $attributes['width'] ?? '100%';
-            $height = $attributes['height'] ?? '500px';
-
-            // Start output buffering
-            ob_start();
-            include plugin_dir_path(__FILE__) . 'includes/planet-template.php';
-            return ob_get_clean();
-        });
+        }, 100); // Run late to ensure Sage is loaded
+    }
+    
+    /**
+     * Parse the Blade directive expression
+     */
+    private function parseExpression($expression) {
+        // Extract attributes from the expression string
+        preg_match_all('/(\w+)\s*=\s*["\']([^"\']*)["\']/', trim($expression, "'\""), $matches);
+        
+        $attributes = [];
+        if (!empty($matches[0])) {
+            for ($i = 0; $i < count($matches[0]); $i++) {
+                $attributes[$matches[1][$i]] = "'" . $matches[2][$i] . "'";
+            }
+        }
+        
+        // Set default values for missing attributes
+        if (!isset($attributes['id'])) {
+            $attributes['id'] = "'bonsai-planet-" . uniqid() . "'";
+        }
+        if (!isset($attributes['width'])) {
+            $attributes['width'] = "'100%'";
+        }
+        if (!isset($attributes['height'])) {
+            $attributes['height'] = "'500px'";
+        }
+        
+        return $attributes;
+    }
+    
+    /**
+     * Render the planet template
+     */
+    public function renderPlanet($id, $width, $height) {
+        ob_start();
+        include plugin_dir_path(__FILE__) . 'includes/planet-template.php';
+        return ob_get_clean();
     }
 
     /**
