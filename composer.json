@@ -1,0 +1,42 @@
+{
+  "name": "your-vendor/bonsai-planets",
+  "description": "Interactive 3D planets built with Three.js for WordPress",
+  "type": "wordpress-plugin",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Your Name",
+      "email": "your-email@example.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "composer/installers": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "BonsaiPlanets\\": "src/"
+    }
+  },
+  "extra": {
+    "installer-paths": {
+      "../../plugins/{$name}/": ["type:wordpress-plugin"]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "npm install"
+    ],
+    "post-update-cmd": [
+      "npm install"
+    ],
+    "build": [
+      "npm run build"
+    ]
+  }
+} 
