@@ -74,7 +74,7 @@ if (!function_exists('bonsai_planets_init')):
         }
         
         // Register shortcode
-        add_shortcode('bonsai_planet', 'bonsai_planets_shortcode');
+        add_shortcode('bonsai_planet', 'BonsaiPlanets\\Frontend\\bonsai_planets_shortcode');
     }
 endif;
 
